@@ -1,0 +1,77 @@
+{
+  "name": "electron-quick-start",
+  "version": "1.0.0",
+  "description": "A minimal Electron application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-packager . 'health-manage' --platform=win32 --arch=x64  --out=./out --icon=./logo.ico --asar --app-version=0.0.8",
+    "packbuild": "electron-builder --win --x64"
+  },
+  "repository": "https://github.com/electron/electron-quick-start",
+  "keywords": [
+    "Electron",
+    "quick",
+    "start",
+    "tutorial",
+    "demo"
+  ],
+  "author": "GitHub",
+  "license": "CC0-1.0",
+  "build": {
+    "appId": "com.Lantosec.HelloWorld02",
+    "copyright": "Lantosec",
+    "productName": "healthManage",
+    "compression": "store",
+    "asar": false,
+    "directories": {
+      "output": "build"
+    },
+    "dmg": {
+      "background": "res/background.png",
+      "window": {
+        "x": 100,
+        "y": 100,
+        "width": 500,
+        "height": 300
+      }
+    },
+    "win": {
+      "icon": "",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "ia32"
+          ]
+        }
+      ]
+    },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "http://172.16.0.34:8888/electron/helloworld "
+      }
+    ],
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "",
+      "uninstallerIcon": "",
+      "installerHeaderIcon": "",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "xxxx",
+      "include": ""
+    }
+  },
+  "devDependencies": {
+    "electron": "^10.1.5",
+    "electron-packager": "^15.2.0"
+  },
+  "dependencies": {
+    "electron-updater": "^4.3.5",
+    "http": "0.0.1-security"
+  }
+}

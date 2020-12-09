@@ -1,0 +1,239 @@
+<!DOCTYPE html><html lang=zh-cmn-Hans><head>
+  <meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge">
+  <meta name=viewport content="width=device-width,initial-scale=1"><link rel=icon href=logo.png><title>智能化数据报表决策平台系统</title><style>#loading-mask {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 100%;
+      background: #fff;
+      user-select: none;
+      z-index: 9999;
+      overflow: hidden
+    }
+
+    .loading-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -100%)
+    }
+
+    .loading-dot {
+      animation: antRotate 1.2s infinite linear;
+      transform: rotate(45deg);
+      position: relative;
+      display: inline-block;
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      box-sizing: border-box
+    }
+
+    .loading-dot i {
+      width: 22px;
+      height: 22px;
+      position: absolute;
+      display: block;
+      background-color: #1890ff;
+      border-radius: 100%;
+      transform: scale(.75);
+      transform-origin: 50% 50%;
+      opacity: .3;
+      animation: antSpinMove 1s infinite linear alternate
+    }
+
+    .loading-dot i:nth-child(1) {
+      top: 0;
+      left: 0
+    }
+
+    .loading-dot i:nth-child(2) {
+      top: 0;
+      right: 0;
+      -webkit-animation-delay: .4s;
+      animation-delay: .4s
+    }
+
+    .loading-dot i:nth-child(3) {
+      right: 0;
+      bottom: 0;
+      -webkit-animation-delay: .8s;
+      animation-delay: .8s
+    }
+
+    .loading-dot i:nth-child(4) {
+      bottom: 0;
+      left: 0;
+      -webkit-animation-delay: 1.2s;
+      animation-delay: 1.2s
+    }
+
+    #notification {
+      height: 100%;
+      width: 100%;
+      background: rgba(0,0,0,.4);
+      position: fixed;
+      bottom: 0;
+      z-index: 100
+      /* position: fixed;
+      bottom: 0;
+      left: 20px;
+      width: 200px;
+      padding: 20px;
+      border-radius: 5px;
+      background-color: white;
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); */
+    }
+    #notification .wrap{
+      width: 600px;
+      height: 340px;
+      padding: 100px;
+      background: #fff;
+      margin: 200px auto 0;
+      text-align: center;
+    }
+    .hidden {
+      display: none;
+    }
+
+    @keyframes antRotate {
+      to {
+        -webkit-transform: rotate(405deg);
+        transform: rotate(405deg)
+      }
+    }
+
+    @-webkit-keyframes antRotate {
+      to {
+        -webkit-transform: rotate(405deg);
+        transform: rotate(405deg)
+      }
+    }
+
+    @keyframes antSpinMove {
+      to {
+        opacity: 1
+      }
+    }
+
+    @-webkit-keyframes antSpinMove {
+      to {
+        opacity: 1
+      }
+    }</style><link href=css/chunk-vendors.efc2ba5d.css rel=preload as=style>
+    <link href=css/index.fead3f63.css rel=preload as=style>
+    <link href=js/chunk-vendors.e4b4a76f.js rel=preload as=script>
+    <link href=js/index.b2521c86.js rel=preload as=script>
+    <link href=css/chunk-vendors.efc2ba5d.css rel=stylesheet>
+    <link href=css/index.fead3f63.css rel=stylesheet>
+  </head>
+    <body>
+      <noscript><strong>We're sorry but vue-antd-pro doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript>
+      <div id=app>
+        <div id=loading-mask>
+          <div class=loading-wrapper>
+            <span class="loading-dot loading-dot-spin"><i></i><i></i><i></i><i></i></span>
+          </div>
+        </div>  
+    </div>
+
+    <div id="notification" class="hidden">
+      <div class="wrap">
+        <p id="message"></p>
+        <div role="progressbar" id="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" class="hidden mb20 el-progress el-progress--line el-progress--text-inside">
+          <div class="el-progress-bar">
+            <div class="el-progress-bar__outer" style="height: 26px;">
+              <div class="el-progress-bar__inner" id="progressWidth">
+                <div class="el-progress-bar__innerText" id="progressNum"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="startUpdate" class="hidden">
+          <button class="el-button el-button--primary el-button--mini" onClick="startUpdateClick()">下载更新</button>
+          <button class="el-button  el-button--mini"  onClick="closeNotification()">暂不更新</button>
+        </div>
+        <!-- <button id="restart-button" onClick="restartApp()" class="hidden">
+          重启更新
+        </button> -->
+      </div>
+    </div>
+    <script src=./js/vue.min.js></script>
+    <script src=./js/vue-router.min.js></script>
+    <script src=./js/vuex.min.js></script>
+    <script src=./js/axios.min.js></script>
+    <script src=js/chunk-vendors.e4b4a76f.js></script>
+    <script src=js/index.b2521c86.js></script>
+        <script>
+          window.electron = require('electron')
+          console.log('electron====', window.electron)
+        </script>
+        <script>
+        const { ipcRenderer } = require('electron');
+        const version = document.getElementById('version');
+        const notification = document.getElementById('notification');
+        const startUpdateWrap = document.getElementById('startUpdate')
+        const progressNum = document.getElementById('progressNum')
+        const progressWidth = document.getElementById('progressWidth')
+        const progressbar = document.getElementById('progressbar')
+        const message = document.getElementById('message');
+        // const restartButton = document.getElementById('restart-button');
+        
+        //获取当前版本
+        ipcRenderer.send('app_version');
+        ipcRenderer.on('app_version', (event, arg) => {
+          ipcRenderer.removeAllListeners('app_version');
+          version.innerText =  arg.version;
+        });
+        //新版本检测
+        console.log("开始新版本检测")
+        ipcRenderer.send('checkForUpdate');
+        
+        //发现新版本
+        ipcRenderer.on('update_available', () => {
+          console.log("正在下载中...")
+          message.innerText = '发现新版本，是否更新？';
+          notification.classList.remove('hidden');
+          startUpdateWrap.classList.remove('hidden')
+        });
+        
+        //下载成功触发
+        ipcRenderer.on('update_downloaded', () => {
+          // ipcRenderer.removeAllListeners('update_downloaded');
+          message.classList.remove('hidden');
+          message.innerText = '下载成功！即将开始更新';
+          ipcRenderer.send('isUpdateNow');
+        });
+
+        // 监听main.js 传递过来的message
+        ipcRenderer.on('message', (msg) => {
+          console.log('message=====', msg)
+        })
+
+        function startUpdateClick(){
+          ipcRenderer.send('confirm-downloadUpdate')
+          startUpdateWrap.classList.add('hidden'); // 隐藏两个按钮
+          // message.classList.add('hidden'); // 隐藏上面的是否更新
+          progressbar.classList.remove('hidden'); // 显示进度条
+        }
+        
+        function closeNotification() {
+          notification.classList.add('hidden');
+        }
+        
+        function restartApp() {
+          console.log('restartApp======', ipcRenderer)
+          ipcRenderer.send('isUpdateNow');
+        }
+        
+        //下载中触发
+        ipcRenderer.on("downloadProgress", (event, progressObj)=> {
+            console.log(progressObj);
+            let downloadPercent = progressObj.percent || 0;
+            message.innerText = '正在下载更新文件，请稍候...';
+            progressNum.innerText = Math.floor(downloadPercent) + '%';
+            progressWidth.style.width = Math.floor(downloadPercent) + '%'
+        });
+        </script>
+  </body></html>
